@@ -1,0 +1,89 @@
+version: '3'
+services:
+
+    #PHP Service
+    app:
+        build:
+            context: ./php-fpm/
+            dockerfile: Dockerfile
+        restart: no
+        tty: true
+        environment:
+            SERVICE_NAME: app
+            SERVICE_TAGS: dev
+        working_dir: /var/www
+        volumes:
+            - ../src:/var/www
+            - ./php-fpm/local.ini:/usr/local/etc/php/conf.d/local.ini
+        networks:
+            - laravel-advanced-network
+
+    #Nginx Service
+    webserver:
+        image: nginx:alpine
+        restart: no
+        tty: true
+        ports:
+            - "9100:80"
+            - "9110:443"
+        volumes:
+              - ../src:/var/www
+              - ./nginx/conf.d/:/etc/nginx/conf.d/
+        networks:
+            - laravel-advanced-network
+
+    #MySQL Service
+    mysql:
+        build:
+            context: ./mariadb
+            args:
+                - http_proxy
+                - https_proxy
+                - no_proxy
+                - MARIADB_VERSION=10.8.2
+        volumes:
+            - ./storage/mariadb:/var/lib/mysql
+            - ./logs/mariadb:/var/log/mysql/
+        restart: no
+        tty: true
+        ports:
+            - "9130:3306"
+        expose:
+            - "3306"
+        environment:
+            MYSQL_DATABASE: laravel
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_ROOT_PASSWORD: secret
+        networks:
+            - laravel-advanced-network
+
+    ## phpMyAdmin ###########################################
+    phpmyadmin:
+        build:
+            context: ./phpmyadmin
+            dockerfile: Dockerfile
+        environment:
+            - PMA_ARBITRARY=1
+            - PMA_HOST=mysql
+            - PMA_PORT=3306
+            - MYSQL_USER=root
+            - MYSQL_PASSWORD=secret
+            - MYSQL_ROOT_PASSWORD=secret
+            - UPLOAD_LIMIT=1073741824
+        ports:
+            - "9120:80"
+        depends_on:
+            - mysql
+        links:
+            - mysql:mysql
+        restart: no
+        networks:
+            - laravel-advanced-network
+
+
+
+#Docker Networks
+networks:
+    laravel-advanced-network:
+        driver: bridge

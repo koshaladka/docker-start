@@ -17,6 +17,10 @@ services:
             - ./php-fpm/local.ini:/usr/local/etc/php/conf.d/local.ini
         networks:
             - laravel-advanced-network
+        # for Vite
+        ports:
+            - "5173:5173"
+
 
     #Nginx Service
     webserver:

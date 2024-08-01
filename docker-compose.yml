@@ -6,7 +6,7 @@ services:
         build:
             context: ./php-fpm/
             dockerfile: Dockerfile
-        restart: no
+        restart: 'no'
         tty: true
         environment:
             SERVICE_NAME: app
@@ -17,11 +17,13 @@ services:
             - ./php-fpm/local.ini:/usr/local/etc/php/conf.d/local.ini
         networks:
             - laravel-advanced-network
+        ports:
+            - "5173:5173"
 
     #Nginx Service
     webserver:
         image: nginx:alpine
-        restart: no
+        restart: 'no'
         tty: true
         ports:
             - "9100:80"
@@ -44,7 +46,7 @@ services:
         volumes:
             - ./storage/mariadb:/var/lib/mysql
             - ./logs/mariadb:/var/log/mysql/
-        restart: no
+        restart: 'no'
         tty: true
         ports:
             - "9130:3306"
@@ -77,7 +79,7 @@ services:
             - mysql
         links:
             - mysql:mysql
-        restart: no
+        restart: 'no'
         networks:
             - laravel-advanced-network
 
